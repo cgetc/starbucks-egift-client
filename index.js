@@ -61,7 +61,7 @@ module.exports = {
                     }, 10000)
                         .then(function () {
                            var splash = driver.findElement(By.name('cart_form[splash]'));
-                           splash.sendKeys(Keys.chord(Keys.CONTROL, 'a'), '55');
+                           splash.clear();
                            splash.sendKeys(sns_message);
                            return driver.findElement(By.xpath('//*[@class="modal_content"]//a[contains(@class,"submit")]')).click()
                         })
