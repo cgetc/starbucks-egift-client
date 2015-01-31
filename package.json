@@ -1,14 +1,14 @@
 {
-  "name": "starbucks-egift-twitterbot",
+  "name": "starbucks-egift-clinet",
   "version": "0.0.1",
-  "description": "twitterbot to send \"Starbucks eGift\" to its followers.",
+  "description": "A npm to send \"Starbucks eGift\".",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cgetc/starbucks-egift-twitterbot.git"
+    "url": "https://github.com/cgetc/starbucks-egift-clinet.git"
   },
   "keywords": [
     "twitter",
@@ -19,9 +19,9 @@
   "author": "cgetc",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cgetc/starbucks-egift-twitterbot/issues"
+    "url": "https://github.com/cgetc/starbucks-egift-clinet/issues"
   },
-  "homepage": "https://github.com/cgetc/starbucks-egift-twitterbot",
+  "homepage": "https://github.com/cgetc/starbucks-egift-clinet",
   "dependencies": {
     "selenium-webdriver": "^2.44.0"
   }
