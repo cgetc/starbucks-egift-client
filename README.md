@@ -33,7 +33,7 @@ twitterBot.gift('cgetc', 'サンクス', 'スタバのチケットあげる♥')
 ```config.js
 module.exports = {
     webdriver: {
-        remote_host: 'Selenium-RCを使用する場合はホストを指定(任意）',
+        remote_url: 'Selenium-RCを使用する場合はホストを指定(任意）',
         capability: 'chromeもしくはfirefoxを指定'
     },
     twitter: {

@@ -4,8 +4,8 @@ var webdriver = require('selenium-webdriver'),
 module.exports = {
     twitterBot: function (config) {
         var builder = new webdriver.Builder();
-        if (config.webdriver.remote_host) {
-            builder = usingServer(config.webdriver.remote_host);
+        if (config.webdriver.remote_url) {
+            builder = usingServer(config.webdriver.remote_url);
         }
         var capability = config.webdriver.capability.match(/firefox/i)? webdriver.Capabilities.firefox() : webdriver.Capabilities.chrome();
         var driver = builder.withCapabilities(capability).build();
