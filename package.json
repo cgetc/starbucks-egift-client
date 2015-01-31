@@ -1,5 +1,5 @@
 {
-  "name": "starbucks-egift-clinet",
+  "name": "starbucks-egift-client",
   "version": "0.0.1",
   "description": "A npm to send \"Starbucks eGift\".",
   "main": "index.js",
