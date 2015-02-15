@@ -1,6 +1,6 @@
 {
   "name": "starbucks-egift-client",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A npm to send \"Starbucks eGift\".",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,9 @@
   "homepage": "https://github.com/cgetc/starbucks-egift-clinet",
   "dependencies": {
     "selenium-webdriver": "^2.44.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "node-http-server": "^2.0.0"
   }
 }
