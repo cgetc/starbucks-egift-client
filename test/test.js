@@ -8,17 +8,13 @@ var config = {
 
 server.deploy({
         port: port,
-        root: './mock/'
+        root: './test/mock/'
     }
 );
 
 var Starbucks = require('starbucks-egift-client').client(config); // npmの読み込む
 
 describe('create_giftcard', function () {
-
-    beforeEach(function () {
-    });
-
     it('success', function (done) {
         this.timeout(60000);
         var form = {
