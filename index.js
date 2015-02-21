@@ -30,7 +30,7 @@ module.exports = {
                 function complete () {
                     driver.wait(function () {
                         return driver.findElement(By.xpath('//*[@id="gift_url"]/a/input')).getAttribute('value');
-                    }, 10000).
+                    }, 15000).
                         then(function (url) {
                             driver.quit();
                             success.call(this, url.trim());
@@ -123,7 +123,7 @@ module.exports = {
                         function complete () {
                             setTimeout(function () {
                                 driver.quit();
-                            }, 10000);
+                            }, 15000);
                         }
 
                         driver.get(config.site_url).
