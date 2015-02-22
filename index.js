@@ -3,14 +3,14 @@ var webdriver = require('selenium-webdriver'),
 
 module.exports = {
     client: function (config) {
-        var builder = new webdriver.Builder();
+        var capability = config.capability.match(/firefox/i)? webdriver.Capabilities.firefox() : webdriver.Capabilities.chrome();
+        var builder = new webdriver.Builder().withCapabilities(capability);
         if (config.remote_url) {
             builder = builder.usingServer(config.remote_url);
         }
-        var capability = config.capability.match(/firefox/i)? webdriver.Capabilities.firefox() : webdriver.Capabilities.chrome();
-        var driver = builder.withCapabilities(capability).build();
         return {
             create_giftcard: function (form, success, failure) {
+                var driver = builder.build();
 
                 function select_mail() {
                     driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
@@ -56,7 +56,8 @@ module.exports = {
             twitterBot: function (twitter) {
                 return {
                     gift: function (setting, form) {
-
+                        var driver = builder.build();
+                        
                         var defer = webdriver.promise.defer();
                         function select_twitter() {
                             driver.findElement(By.xpath('//*[@data-provider="twitter"]')).click().
