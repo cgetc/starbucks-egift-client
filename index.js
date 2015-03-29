@@ -60,6 +60,7 @@ module.exports = {
                         
                         var defer = webdriver.promise.defer();
                         function select_twitter() {
+                            setTimeout(function () {
                             driver.findElement(By.xpath('//*[@data-provider="twitter"]')).click().
                                 then(function () {
                                     driver.wait(function () {
@@ -68,7 +69,6 @@ module.exports = {
                                         then(function () {
                                             driver.findElements(By.xpath('//*[@id="authorize"]//a[@class="twitter"]')).then(function (btn) {
                                                 if (btn.length) {
-                                                    driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
                                                     btn[0].click().
                                                         then(connect_twitter).
                                                         then(select_twitter);
@@ -76,6 +76,7 @@ module.exports = {
                                                     driver.findElements(By.xpath('//*[contains(@class,"filter_target")]/figure/figcaption[text()="'+ setting.to + '"]')).
                                                         then(function (target) {
                                                             if (target.length) {
+                                                                driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
                                                                 target[0].click();
                                                                 driver.findElement(By.id('new_cart_form')).submit().
                                                                     then(function () {
@@ -90,6 +91,7 @@ module.exports = {
                                             });
                                         });
                                 });
+                            }, 5000);
                             return defer.promise;
                         }
 
