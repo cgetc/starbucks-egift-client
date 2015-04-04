@@ -56,41 +56,68 @@ module.exports = {
             twitterBot: function (twitter) {
                 return {
                     gift: function (setting, form) {
-                        var driver = builder.build();
-                        
+                        var driver;
+                        var retry = 2;
+
+                        try {
+                            start();
+                        } catch (e) {
+                            handle_error(e);
+                        }
+
+                        function start() {
+                            driver = builder.build();
+                            driver.get(config.site_url).
+                                then(select_twitter, handle_error).
+                                then(send_cart, handle_error).
+                                then(complete);
+                        }
+
+                        function handle_error (e) {
+                            console.log(e);
+                            driver.quit();
+                            if (--retry) {
+                                setTimeout(start, 1000);
+                            }
+                        }
+
                         var defer = webdriver.promise.defer();
                         function select_twitter() {
                             setTimeout(function () {
-                            driver.findElement(By.xpath('//*[@data-provider="twitter"]')).click().
-                                then(function () {
-                                    driver.wait(function () {
-                                        return driver.findElement(By.id('by_twitter')).isDisplayed();
-                                    }, 10000).
+                                try {
+                                    driver.findElement(By.xpath('//*[@data-provider="twitter"]')).click().
                                         then(function () {
-                                            driver.findElements(By.xpath('//*[@id="authorize"]//a[@class="twitter"]')).then(function (btn) {
-                                                if (btn.length) {
-                                                    btn[0].click().
-                                                        then(connect_twitter).
-                                                        then(select_twitter);
-                                                } else {
-                                                    driver.findElements(By.xpath('//*[contains(@class,"filter_target")]/figure/figcaption[text()="'+ setting.to + '"]')).
-                                                        then(function (target) {
-                                                            if (target.length) {
-                                                                driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
-                                                                target[0].click();
-                                                                driver.findElement(By.id('new_cart_form')).submit().
-                                                                    then(function () {
-                                                                        return defer.fulfill();
-                                                                    });
-                                                            } else {
-                                                                console.log('no twitter_screen_name:[' + setting.to + ']');
-                                                                driver.quit();
-                                                            }
-                                                        });
-                                                }
-                                            });
-                                        });
-                                });
+                                            driver.wait(function () {
+                                                return driver.findElement(By.id('by_twitter')).isDisplayed();
+                                            }, 10000).
+                                                then(function () {
+                                                    driver.findElements(By.xpath('//*[@id="authorize"]//a[@class="twitter"]')).then(function (btn) {
+                                                        if (btn.length) {
+                                                            btn[0].click().
+                                                                then(connect_twitter, handle_error).
+                                                                then(select_twitter, handle_error);
+                                                        } else {
+                                                            driver.findElements(By.xpath('//*[contains(@class,"filter_target")]/figure/figcaption[text()="'+ setting.to + '"]')).
+                                                                then(function (target) {
+                                                                    if (target.length) {
+                                                                        driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
+                                                                        target[0].click();
+                                                                        driver.findElement(By.id('new_cart_form')).submit().
+                                                                            then(function () {
+                                                                                return defer.fulfill();
+                                                                            });
+                                                                    } else {
+                                                                        console.log('no twitter_screen_name:[' + setting.to + ']');
+                                                                        driver.quit();
+                                                                    }
+                                                                }, handle_error);
+                                                        }
+                                                    });
+                                                });
+                                        }, handle_error);
+                                } catch (e) {
+                                    handle_error(e);
+                                }
                             }, 5000);
                             return defer.promise;
                         }
@@ -112,7 +139,7 @@ module.exports = {
                                    splash.clear();
                                    splash.sendKeys(setting.message);
                                    return driver.findElement(By.xpath('//*[@class="modal_content"]//a[contains(@class,"submit")]')).click();
-                                })
+                                }, handle_error)
                                 .then(function () {
                                     driver.findElement(By.name('cart_form[email]')).sendKeys(form.mail_address);
                                     driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(form.mail_address);
@@ -120,7 +147,7 @@ module.exports = {
                                     driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + form.credit_month + '"]')).click();
                                     driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + form.credit_year + '"]')).click();
                                     return driver.findElement(By.id('new_cart_form')).submit();
-                                });
+                                }, handle_error);
                         }
 
                         function complete () {
@@ -128,11 +155,6 @@ module.exports = {
                                 driver.quit();
                             }, 15000);
                         }
-
-                        driver.get(config.site_url).
-                            then(select_twitter).
-                            then(send_cart).
-                            then(complete);
                     }
                 };
             }
