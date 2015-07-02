@@ -2,28 +2,55 @@ var webdriver = require('selenium-webdriver'),
     By = webdriver.By;
 
 module.exports = {
-    client: function (config) {
-        var capability = config.capability.match(/firefox/i)? webdriver.Capabilities.firefox() : webdriver.Capabilities.chrome();
-        var builder = new webdriver.Builder().withCapabilities(capability);
-        if (config.remote_url) {
-            builder = builder.usingServer(config.remote_url);
+    client: function (config, site_url) {
+        if (!site_url) {
+	          site_url = 'https://gift.starbucks.co.jp/card/';
+        }
+        var builder = new webdriver.Builder();
+        if (config.selenium) {
+          if (config.capability) {
+          		builder = builder.forBrowser(config.selenium.capability);
+          }
+          if (config.selenium.remote_url) {
+              builder = builder.usingServer(config.selenium.remote_url);
+          }
         }
         return {
-            create_giftcard: function (form, success, failure) {
-                var driver = builder.build();
+            create_giftcard: function (card_message, success, failure) {
+                var driver;
+                var retry = 2;
+
+                start();
+
+                function start() {
+	                  try {
+		                    driver = builder.build();
+		                    driver.get(site_url).
+		                        then(select_mail, handle_error).
+		                        then(send_cart, handle_error).
+		                        then(complete, handle_error);
+	                  } catch (e) {
+		                    driver.quit();
+		                    if (--retry) {
+			                      setTimeout(start, 1000);
+		                    } else if (failure) {
+		                      	failure.call(this, e);
+		                    }
+	                  }
+                }
 
                 function select_mail() {
-                    driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
+                    driver.findElement(By.name('cart_form[message]')).sendKeys(card_message);
                     driver.findElement(By.xpath('//*[@data-provider="mail"]')).click();
                     return driver.findElement(By.id('new_cart_form')).submit();
                 }
 
                 function send_cart () {
-                    driver.findElement(By.name('cart_form[email]')).sendKeys(form.mail_address);
-                    driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(form.mail_address);
-                    driver.findElement(By.name('cart_form[card_num]')).sendKeys(form.credit_number);
-                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + form.credit_month + '"]')).click();
-                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + form.credit_year + '"]')).click();
+                    driver.findElement(By.name('cart_form[email]')).sendKeys(config.payment.mail_address);
+                    driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(config.payment.mail_address);
+                    driver.findElement(By.name('cart_form[card_num]')).sendKeys(config.payment.credit_number);
+                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + config.payment.credit_month + '"]')).click();
+                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + config.payment.credit_year + '"]')).click();
                     return driver.findElement(By.id('new_cart_form')).submit();
                 }
 
@@ -43,42 +70,28 @@ module.exports = {
                         failure.call(this, e);
                     }
                 }
-
-                try {
-                    driver.get(config.site_url).
-                        then(select_mail, handle_error).
-                        then(send_cart, handle_error).
-                        then(complete, handle_error);
-                } catch (e) {
-                    handle_error(e);
-                }
             },
             twitterBot: function (twitter) {
                 return {
-                    gift: function (setting, form) {
+                    gift: function (setting, card_message) {
                         var driver;
                         var retry = 2;
 
-                        try {
-                            start();
-                        } catch (e) {
-                            handle_error(e);
-                        }
+                        start();
 
                         function start() {
-                            driver = builder.build();
-                            driver.get(config.site_url).
-                                then(select_twitter, handle_error).
-                                then(send_cart, handle_error).
-                                then(complete);
-                        }
-
-                        function handle_error (e) {
-                            console.log(e);
-                            driver.quit();
-                            if (--retry) {
-                                setTimeout(start, 1000);
-                            }
+	                          try {
+		                            driver = builder.build();
+		                            driver.get(site_url).
+		                                then(select_twitter, handle_error).
+		                                then(send_cart, handle_error).
+		                                then(complete);
+	                          } catch (e) {
+		                            driver.quit();
+		                            if (--retry) {
+		                                setTimeout(start, 1000);
+		                            }
+	                          }
                         }
 
                         var defer = webdriver.promise.defer();
@@ -100,7 +113,7 @@ module.exports = {
                                                             driver.findElements(By.xpath('//*[contains(@class,"filter_target")]/figure/figcaption[text()="'+ setting.to + '"]')).
                                                                 then(function (target) {
                                                                     if (target.length) {
-                                                                        driver.findElement(By.name('cart_form[message]')).sendKeys(form.card_message);
+                                                                        driver.findElement(By.name('cart_form[message]')).sendKeys(card_message);
                                                                         target[0].click();
                                                                         driver.findElement(By.id('new_cart_form')).submit().
                                                                             then(function () {
@@ -141,11 +154,11 @@ module.exports = {
                                    return driver.findElement(By.xpath('//*[@class="modal_content"]//a[contains(@class,"submit")]')).click();
                                 }, handle_error)
                                 .then(function () {
-                                    driver.findElement(By.name('cart_form[email]')).sendKeys(form.mail_address);
-                                    driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(form.mail_address);
-                                    driver.findElement(By.name('cart_form[card_num]')).sendKeys(form.credit_number);
-                                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + form.credit_month + '"]')).click();
-                                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + form.credit_year + '"]')).click();
+                                    driver.findElement(By.name('cart_form[email]')).sendKeys(config.payment.mail_address);
+                                    driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(config.payment.mail_address);
+                                    driver.findElement(By.name('cart_form[card_num]')).sendKeys(config.payment.credit_number);
+                                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + config.payment.credit_month + '"]')).click();
+                                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + config.payment.credit_year + '"]')).click();
                                     return driver.findElement(By.id('new_cart_form')).submit();
                                 }, handle_error);
                         }
@@ -154,6 +167,11 @@ module.exports = {
                             setTimeout(function () {
                                 driver.quit();
                             }, 15000);
+                        }
+
+                        function handle_error (e) {
+	                          console.log(e);
+	                          driver.quit();
                         }
                     }
                 };

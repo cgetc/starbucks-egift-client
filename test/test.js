@@ -1,10 +1,6 @@
 var server=require('node-http-server');
 var assert = require("assert");
 var port = 8080;
-var config = {
-    site_url: 'http://localhost:' + port + '/mail/',
-    capability: 'chrome'
-};
 
 server.deploy({
         port: port,
@@ -12,7 +8,7 @@ server.deploy({
     }
 );
 
-var Starbucks = require('starbucks-egift-client').client(config); // npmの読み込む
+var Starbucks = require('starbucks-egift-client').client(null, 'http://localhost:' + port + '/mail/'); // npmの読み込む
 
 describe('create_giftcard', function () {
     it('success', function (done) {

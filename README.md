@@ -21,15 +21,8 @@ npm install starbucks-egift-client
 var config = require('./config'); // 設定を読み込む
 var Starbucks = require('starbucks-egift-client').client(config); // npmの読み込む
 
-var form = {
-    card_message: 'ギフトカードのメッセージ'
-    mail_address: '決済通知用のメールアドレス',
-    credit_number: 'クレジットカード番号',
-    credit_month: 'クレジットカードの有効期限(月)',
-    credit_year: 'クレジットカードの有効期限(年)'
-};
 // 指定したメッセージのStarbucks eGiftを作成する
-Starbucks.create_giftcard(form, function (url) {
+Starbucks.create_giftcard('ギフトカードのメッセージ', function (url) {
     // Starbucks eGiftのURL
     console.log(url);
 });
@@ -51,23 +44,23 @@ var setting = {
     'message': 'Twitterのメッセージ'
 }
 
-var form =  {
-    card_message: 'ギフトカードのメッセージ'
-    mail_address: '決済通知用のメールアドレス',
-    credit_number: 'クレジットカード番号',
-    credit_month: 'クレジットカードの有効期限(月)',
-    credit_year: 'クレジットカードの有効期限(年)'
-};
-twitterBot.gift(setting, form); // 指定したユーザにStarbucks eGiftを送信
+twitterBot.gift(setting, 'ギフトカードのメッセージ'); // 指定したユーザにStarbucks eGiftを送信
 ```
 
 ## 設定ファイル
 
 ```config.js
 module.exports = {
-    site_url: 'https://gift.starbucks.co.jp/card/',
-    remote_url: 'Selenium-RCを使用する場合はホストを指定(任意）',
-    capability: 'chromeもしくはfirefoxを指定'
+    payment: {
+        mail_address: '決済通知用のメールアドレス',
+        credit_number: 'クレジットカード番号',
+        credit_month: 'クレジットカードの有効期限(月)',
+        credit_year: 'クレジットカードの有効期限(年)'
+    },
+    selenium: {
+      remote_url: 'Selenium-RCを使用する場合はホストを指定(任意）',
+      capability: 'chromeもしくはfirefoxを指定'
+    }
 };
 ```
 
