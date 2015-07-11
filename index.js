@@ -1,23 +1,25 @@
+var Screenshot = require('./utils/Screenshot');
 var webdriver = require('selenium-webdriver'),
     By = webdriver.By;
 
 module.exports = {
     client: function (config, site_url) {
         if (!site_url) {
-	          site_url = 'https://gift.starbucks.co.jp/card/';
+            site_url = 'https://gift.starbucks.co.jp/card/';
         }
         var builder = new webdriver.Builder();
         if (config.selenium) {
-          if (config.capability) {
-          		builder = builder.forBrowser(config.selenium.capability);
-          }
-          if (config.selenium.remote_url) {
-              builder = builder.usingServer(config.selenium.remote_url);
-          }
+            if (config.capability) {
+        		builder = builder.forBrowser(config.selenium.capability);
+            }
+            if (config.selenium.remote_url) {
+                builder = builder.usingServer(config.selenium.remote_url);
+            }
         }
         return {
             create_giftcard: function (card_message, success, failure) {
                 var driver;
+                var screenshot;
                 var retry = 2;
 
                 start();
@@ -25,18 +27,25 @@ module.exports = {
                 function start() {
 	                  try {
 		                    driver = builder.build();
+                            if (config.log_dir) {
+                                screenshot = new Screenshot(driver, config.log_dir);
+                            }
 		                    driver.get(site_url).
 		                        then(select_mail, handle_error).
 		                        then(send_cart, handle_error).
 		                        then(complete, handle_error);
 	                  } catch (e) {
-		                    driver.quit();
+		                    quit();
 		                    if (--retry) {
 			                      setTimeout(start, 1000);
 		                    } else if (failure) {
 		                      	failure.call(this, e);
 		                    }
 	                  }
+                }
+
+                function quit() {
+                    driver.quit();
                 }
 
                 function select_mail() {
@@ -59,13 +68,21 @@ module.exports = {
                         return driver.findElement(By.xpath('//*[@id="gift_url"]/a/input')).getAttribute('value');
                     }, 15000).
                         then(function (url) {
-                            driver.quit();
+                            quit();
                             success.call(this, url.trim());
                         }, handle_error);
                 }
 
                 function handle_error (e) {
-                    driver.quit();
+                    if (screenshot) {
+                        screenshot.take('error.' + new Date().getTime() + '.png').
+                            then(quit, function (err) {
+                                console.log(err);
+                                quit();
+                            });
+                    } else {
+                        quit();
+                    }
                     if (failure) {
                         failure.call(this, e);
                     }
@@ -75,6 +92,7 @@ module.exports = {
                 return {
                     gift: function (setting, card_message) {
                         var driver;
+                        var screenshot;
                         var retry = 2;
 
                         start();
@@ -82,16 +100,23 @@ module.exports = {
                         function start() {
 	                          try {
 		                            driver = builder.build();
+                                    if (config.log_dir) {
+                                        screenshot = new Screenshot(driver, config.log_dir);
+                                    }
 		                            driver.get(site_url).
 		                                then(select_twitter, handle_error).
 		                                then(send_cart, handle_error).
 		                                then(complete);
 	                          } catch (e) {
-		                            driver.quit();
+		                            quit();
 		                            if (--retry) {
 		                                setTimeout(start, 1000);
 		                            }
 	                          }
+                        }
+
+                        function quit() {
+                            driver.quit();
                         }
 
                         var defer = webdriver.promise.defer();
@@ -142,7 +167,6 @@ module.exports = {
                         }
 
                         function send_cart () {
-                            var defer = webdriver.promise.defer();
                             driver.findElement(By.xpath('//a[@data-modal-id="modify_direct_message"]')).click();
                             return driver.wait(function () {
                                 return driver.findElement(By.name('cart_form[splash]')).isDisplayed();
@@ -164,14 +188,20 @@ module.exports = {
                         }
 
                         function complete () {
-                            setTimeout(function () {
-                                driver.quit();
-                            }, 15000);
+                            setTimeout(quit, 30000);
                         }
 
                         function handle_error (e) {
-	                          console.log(e);
-	                          driver.quit();
+	                        console.log(e);
+                            if (screenshot) {
+                                screenshot.take('error.' + new Date().getTime() + '.png').
+                                    then(quit, function (err) {
+                                        console.log(err);
+                                        quit();
+                                    });
+                            } else {
+                                quit();
+                            }
                         }
                     }
                 };

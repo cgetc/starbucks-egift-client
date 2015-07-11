@@ -1,4 +1,5 @@
 var Starbucks = require('starbucks-egift-client').client({
+  log_dir: '/var/tmp/starbucks-egift',
   payment: {
     mail_address: '決済通知用のメールアドレス',
     credit_number: 'クレジットカード番号',
@@ -11,4 +12,6 @@ var Starbucks = require('starbucks-egift-client').client({
 Starbucks.create_giftcard('ギフトカードのメッセージ', function (url) {
     // Starbucks eGiftのURL
     console.log(url);
+}, function (err) {
+    console.log(err);
 });
