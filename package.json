@@ -1,6 +1,6 @@
 {
   "name": "starbucks-egift-client",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A npm to send \"Starbucks eGift\".",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "mocha": "^2.1.0",
-    "node-http-server": "^2.0.0"
+    "connect": "~3.4.0",
+    "serve-static": "~1.10.0"
   }
 }
