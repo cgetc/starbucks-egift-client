@@ -58,7 +58,9 @@ module.exports = {
                     driver.findElement(By.name('cart_form[email]')).sendKeys(config.payment.mail_address);
                     driver.findElement(By.name('cart_form[email_confirmation]')).sendKeys(config.payment.mail_address);
                     driver.findElement(By.name('cart_form[card_num]')).sendKeys(config.payment.credit_number);
+                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]')).click();
                     driver.findElement(By.xpath('//select[@name="cart_form[card_expired_month]"]/option[@value="' + config.payment.credit_month + '"]')).click();
+                    driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]')).click();
                     driver.findElement(By.xpath('//select[@name="cart_form[card_expired_year]"]/option[@value="' + config.payment.credit_year + '"]')).click();
                     return driver.findElement(By.id('new_cart_form')).submit();
                 }
